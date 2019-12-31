@@ -1,0 +1,17 @@
+{
+    "name": "alisaxu/init-config",
+    "description": "init config",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "xushasha",
+            "email": "xushasha@banmatrip.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {"pack\\": "src/"}
+    }
+}
