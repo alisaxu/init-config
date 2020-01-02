@@ -7,19 +7,36 @@ class AutoInitConfig
     protected $createDir = '';//配置文件所在目录
     protected $configContent = [];
     protected $errorMsg = [];
+    protected $token = '';//token
+    protected $algo = 'sha256';
+    protected $signature = '';
 
     CONST SUCCESS = 200;
     CONST ERROR = 999;
     CONST DIR_NOT_EXISTS = '目录不存在';
 
-    public function __construct($configContent, $createDir)
+    public function __construct($configContent, $createDir, $token, $signature)
     {
         $this->configContent = $configContent;
         $this->createDir = $createDir;
+        $this->token = $token;
+        $this->signature = $signature;
     }
 
+    /**
+     * 初始化配置文件
+     * @return array
+     */
     public function initConfig(){
+        if(!$this->checkSignature()){//检测
+            return $this->toResponse();
+        }
+
         if(!$this->checkDirExists()){//检测目录是否存在
+            return $this->toResponse();
+        }
+
+        if(empty($this->configContent)){
             return $this->toResponse();
         }
 
@@ -36,6 +53,25 @@ class AutoInitConfig
 
         return $this->toResponse();
     }
+
+    /**
+     * 检测签名是否正确
+     */
+    protected function checkSignature(){
+        if($this->signature == $this->createSignature()){
+            return true;
+        }else{
+            $this->errorMsg[] = '签名验证不合格';
+            return false;
+        }
+    }
+
+    protected function createSignature()
+    {
+        $dataString = json_encode($this->configContent);
+        return hash_hmac($this->algo, $dataString, $this->token);
+    }
+
 
     protected function createConfig($content, $file){
         if(!file_put_contents($file, implode('', $content))){
@@ -54,10 +90,6 @@ class AutoInitConfig
     }
 
     protected function copyConfig($file, $bakFile){
-        if(!file_exists($file)){
-            return true;
-        }
-
         if(!copy($file, $bakFile)){
             $this->errorMsg[] = $file . ' 备份操作错误';
             return false;
