@@ -90,6 +90,10 @@ class AutoInitConfig
     }
 
     protected function copyConfig($file, $bakFile){
+        if(!file_exists($file)){
+            return true;
+        }
+
         if(!copy($file, $bakFile)){
             $this->errorMsg[] = $file . ' 备份操作错误';
             return false;
